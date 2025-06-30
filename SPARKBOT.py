@@ -7,6 +7,7 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Cont
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Токен от @BotFather
 TOKEN = "8099335643:AAHzpUjj7qZjCjRqdJx_8d0DPU_qT8ovfLA"  # Проверь токен в @BotFather!
 
 SPRK_TOKEN_ADDRESS = "0x5897040e2bdC84Dd81Bd7eE0E6edFdB4188B5790"
@@ -89,7 +90,7 @@ async def set_language(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="Markdown"
     )
 
-def main():
+async def main():
     logger.info("Запуск бота...")
     application = Application.builder().token(TOKEN).build()
 
@@ -97,7 +98,8 @@ def main():
     application.add_handler(CallbackQueryHandler(set_language, pattern="^lang_"))
 
     logger.info("Начало polling...")
-    application.run_polling()
+    await application.run_polling()
 
 if __name__ == "__main__":
-    main()
+    import asyncio
+    asyncio.run(main())  # Корректный запуск асинхронной функции
