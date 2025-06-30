@@ -1,0 +1,9 @@
+[tool.poetry]
+name = "sparkbot"
+version = "0.1.0"
+description = "SparkCoin Bot"
+authors = ["you@example.com"]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
