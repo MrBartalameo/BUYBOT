@@ -1,7 +1,7 @@
 import logging
 import requests
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, Filters
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -53,17 +53,17 @@ def get_sprk_stats():
         logger.error(f"Error fetching SPRK stats: {e}")
         return None, None
 
-def start(update: Update, context):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton(name, callback_data=f"lang_{code}")]
         for code, name in LANGUAGES.items()
     ]
-    update.message.reply_text(
+    await update.message.reply_text(
         translations["start"]["en"],
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
-def set_language(update: Update, context):
+async def set_language(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     query.answer()
 
@@ -73,7 +73,7 @@ def set_language(update: Update, context):
 
     price, volume = get_sprk_stats()
     if price is None:
-        query.edit_message_text("❌ Failed to get token data. Try again later.")
+        await query.edit_message_text("❌ Failed to get token data. Try again later.")
         return
 
     text = translations["main_menu"][lang_code].replace("${price}", str(price)).replace("${volume}", str(volume))
@@ -84,22 +84,22 @@ def set_language(update: Update, context):
         [InlineKeyboardButton("📢 Twitter", url=SPRK_TWITTER_URL)],
     ]
 
-    query.edit_message_text(
+    await query.edit_message_text(
         text=text,
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode="Markdown"
     )
 
-def main():
+async def main():
     logger.info("Запуск бота...")
-    updater = Updater(TOKEN, use_context=True)
+    application = Application.builder().token(TOKEN).build()
 
-    updater.dispatcher.add_handler(CommandHandler("start", start))
-    updater.dispatcher.add_handler(CallbackQueryHandler(set_language, pattern="^lang_"))
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CallbackQueryHandler(set_language, pattern="^lang_"))
 
     logger.info("Начало polling...")
-    updater.start_polling()
-    updater.idle()
+    await application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == "__main__":
-    main()
+    import asyncio
+    asyncio.run(main())
