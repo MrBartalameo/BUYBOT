@@ -1,7 +1,7 @@
 import logging
 import requests
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, Filters
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -53,17 +53,17 @@ def get_sprk_stats():
         logger.error(f"Error fetching SPRK stats: {e}")
         return None, None
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def start(update: Update, context):
     keyboard = [
         [InlineKeyboardButton(name, callback_data=f"lang_{code}")]
         for code, name in LANGUAGES.items()
     ]
-    await update.message.reply_text(
+    update.message.reply_text(
         translations["start"]["en"],
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
-async def set_language(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def set_language(update: Update, context):
     query = update.callback_query
     query.answer()
 
@@ -73,7 +73,7 @@ async def set_language(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     price, volume = get_sprk_stats()
     if price is None:
-        await query.edit_message_text("❌ Failed to get token data. Try again later.")
+        query.edit_message_text("❌ Failed to get token data. Try again later.")
         return
 
     text = translations["main_menu"][lang_code].replace("${price}", str(price)).replace("${volume}", str(volume))
@@ -84,22 +84,22 @@ async def set_language(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("📢 Twitter", url=SPRK_TWITTER_URL)],
     ]
 
-    await query.edit_message_text(
+    query.edit_message_text(
         text=text,
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode="Markdown"
     )
 
-async def main():
+def main():
     logger.info("Запуск бота...")
-    application = Application.builder().token(TOKEN).build()
+    updater = Updater(TOKEN, use_context=True)
 
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CallbackQueryHandler(set_language, pattern="^lang_"))
+    updater.dispatcher.add_handler(CommandHandler("start", start))
+    updater.dispatcher.add_handler(CallbackQueryHandler(set_language, pattern="^lang_"))
 
     logger.info("Начало polling...")
-    await application.run_polling()
+    updater.start_polling()
+    updater.idle()
 
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(main())  # Корректный запуск асинхронной функции
+    main()
