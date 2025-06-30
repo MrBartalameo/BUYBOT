@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: sparkbot
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python SPARKBOT.py"
+    pythonVersion: 3.11
