@@ -8,4 +8,4 @@ services:
       - key: PORT
         value: 10000
       - key: RENDER_EXTERNAL_URL
-        value: https://your-render-service.onrender.com
+        value: https://buy-bot-8nw5.onrender.com
