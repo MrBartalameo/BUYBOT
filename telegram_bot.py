@@ -1,3 +1,4 @@
+import os
 import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
@@ -115,13 +116,13 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith("lang_"):
         language = data.split("_")[1]
         user_languages[user_id] = language
-        await query.message.reply_text(
+        await query.edit_message_text(
             MESSAGES[language]["lang_changed"],
             reply_markup=get_main_menu(language)
         )
     else:
         language = user_languages.get(user_id, "en")
-        await query.message.reply_text(
+        await query.edit_message_text(
             MESSAGES[language]["menu"],
             reply_markup=get_main_menu(language)
         )
@@ -129,7 +130,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Flask сервер для вебхука
 app = Flask(__name__)
 
-@app.route('/webhook', methods=['POST'])
+@app.route(f'/{TOKEN}', methods=['POST'])
 async def webhook():
     json_data = request.get_json()
     update = Update.de_json(json_data, app)
