@@ -18,56 +18,11 @@ LINKS = {
 
 # Тексты на разных языках
 MESSAGES = {
-    "en": {
-        "welcome": "Welcome! Please choose your language:",
-        "menu": "Choose an option:",
-        "swap": "Buy SPRK",
-        "gecko": "Gecko Terminal",
-        "twitter": "Twitter",
-        "website": "Our Website",
-        "basescan": "Base Scan Contract",
-        "lang_changed": "Language changed to English."
-    },
-    "de": {
-        "welcome": "Willkommen! Bitte wählen Sie Ihre Sprache:",
-        "menu": "Wählen Sie eine Option:",
-        "swap": "SPRK kaufen",
-        "gecko": "Gecko Terminal",
-        "twitter": "Twitter",
-        "website": "Unsere Website",
-        "basescan": "Base Scan Vertrag",
-        "lang_changed": "Sprache auf Deutsch geändert."
-    },
-    "es": {
-        "welcome": "¡Bienvenido! Por favor, elige tu idioma:",
-        "menu": "Elige una opción:",
-        "swap": "Comprar SPRK",
-        "gecko": "Gecko Terminal",
-        "twitter": "Twitter",
-        "website": "Nuestro sitio web",
-        "basescan": "Contrato en Base Scan",
-        "lang_changed": "Idioma cambiado a Español."
-    },
-    "fr": {
-        "welcome": "Bienvenue ! Veuillez choisir votre langue :",
-        "menu": "Choisissez une option :",
-        "swap": "Acheter SPRK",
-        "gecko": "Gecko Terminal",
-        "twitter": "Twitter",
-        "website": "Notre site web",
-        "basescan": "Contrat Base Scan",
-        "lang_changed": "Langue changée en Français."
-    },
-    "ru": {
-        "welcome": "Добро пожаловать! Выберите язык:",
-        "menu": "Выберите опцию:",
-        "swap": "Купить SPRK",
-        "gecko": "Gecko Terminal",
-        "twitter": "Твиттер",
-        "website": "Наш сайт",
-        "basescan": "Контракт на Base Scan",
-        "lang_changed": "Язык изменён на Русский."
-    }
+    "en": {"welcome": "Welcome! Please choose your language:", "menu": "Choose an option:", "swap": "Buy SPRK", "gecko": "Gecko Terminal", "twitter": "Twitter", "website": "Our Website", "basescan": "Base Scan Contract", "lang_changed": "Language changed to English."},
+    "de": {"welcome": "Willkommen! Bitte wählen Sie Ihre Sprache:", "menu": "Wählen Sie eine Option:", "swap": "SPRK kaufen", "gecko": "Gecko Terminal", "twitter": "Twitter", "website": "Unsere Website", "basescan": "Base Scan Vertrag", "lang_changed": "Sprache auf Deutsch geändert."},
+    "es": {"welcome": "¡Bienvenido! Por favor, elige tu idioma:", "menu": "Elige una opción:", "swap": "Comprar SPRK", "gecko": "Gecko Terminal", "twitter": "Twitter", "website": "Nuestro sitio web", "basescan": "Contrato en Base Scan", "lang_changed": "Idioma cambiado a Español."},
+    "fr": {"welcome": "Bienvenue ! Veuillez choisir votre langue :", "menu": "Choisissez une option :", "swap": "Acheter SPRK", "gecko": "Gecko Terminal", "twitter": "Twitter", "website": "Notre site web", "basescan": "Contrat Base Scan", "lang_changed": "Langue changée en Français."},
+    "ru": {"welcome": "Добро пожаловать! Выберите язык:", "menu": "Выберите опцию:", "swap": "Купить SPRK", "gecko": "Gecko Terminal", "twitter": "Твиттер", "website": "Наш сайт", "basescan": "Контракт на Base Scan", "lang_changed": "Язык изменён на Русский."}
 }
 
 # Хранилище выбранных языков пользователей
@@ -76,10 +31,8 @@ user_languages = {}
 # Клавиатура для выбора языка
 def get_language_keyboard():
     keyboard = [
-        [InlineKeyboardButton("English", callback_data="lang_en"),
-         InlineKeyboardButton("Deutsch", callback_data="lang_de")],
-        [InlineKeyboardButton("Español", callback_data="lang_es"),
-         InlineKeyboardButton("Français", callback_data="lang_fr")],
+        [InlineKeyboardButton("English", callback_data="lang_en"), InlineKeyboardButton("Deutsch", callback_data="lang_de")],
+        [InlineKeyboardButton("Español", callback_data="lang_es"), InlineKeyboardButton("Français", callback_data="lang_fr")],
         [InlineKeyboardButton("Русский", callback_data="lang_ru")]
     ]
     return InlineKeyboardMarkup(keyboard)
@@ -101,10 +54,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if user_id not in user_languages:
         user_languages[user_id] = "en"  # Язык по умолчанию
     language = user_languages[user_id]
-    await update.message.reply_text(
-        MESSAGES[language]["welcome"],
-        reply_markup=get_language_keyboard()
-    )
+    await update.message.reply_text(MESSAGES[language]["welcome"], reply_markup=get_language_keyboard())
 
 # Обработчик выбора языка и меню
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -116,16 +66,10 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith("lang_"):
         language = data.split("_")[1]
         user_languages[user_id] = language
-        await query.edit_message_text(
-            MESSAGES[language]["lang_changed"],
-            reply_markup=get_main_menu(language)
-        )
+        await query.edit_message_text(MESSAGES[language]["lang_changed"], reply_markup=get_main_menu(language))
     else:
         language = user_languages.get(user_id, "en")
-        await query.edit_message_text(
-            MESSAGES[language]["menu"],
-            reply_markup=get_main_menu(language)
-        )
+        await query.edit_message_text(MESSAGES[language]["menu"], reply_markup=get_main_menu(language))
 
 # Flask сервер для вебхука
 app = Flask(__name__)
@@ -144,12 +88,7 @@ if __name__ == "__main__":
     application.add_handler(CallbackQueryHandler(button_callback))
 
     # Установка вебхука
-    PORT = int(os.getenv("PORT", 10000))  # Порт из переменной окружения или 10000 по умолчанию
-    HEROKU_URL = os.getenv("RENDER_EXTERNAL_URL", "https://your-render-service.onrender.com")  # URL сервиса
-    application.run_webhook(
-        listen='0.0.0.0',
-        port=PORT,
-        url_path=TOKEN,
-        webhook_url=f"{HEROKU_URL}/{TOKEN}"
-    )
+    PORT = int(os.getenv("PORT", 10000))
+    HEROKU_URL = os.getenv("RENDER_EXTERNAL_URL", "https://buy-bot-8mw.onrender.com")
+    application.run_webhook(listen='0.0.0.0', port=PORT, url_path=TOKEN, webhook_url=f"{HEROKU_URL}/{TOKEN}")
     app.run(host='0.0.0.0', port=PORT)
