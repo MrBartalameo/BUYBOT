@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: sparkcoin-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python telegram_bot.py
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: RENDER_EXTERNAL_URL
+        value: https://your-render-service.onrender.com
