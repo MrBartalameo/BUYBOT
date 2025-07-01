@@ -1,6 +1,7 @@
 import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
+from flask import Flask, request
 
 # Токен вашего бота
 TOKEN = "8099335643:AAHzpUjj7qZjCjRqdJx_8d0DPU_qT8ovfLA"
@@ -125,20 +126,29 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=get_main_menu(language)
         )
 
-# Основная функция
-async def main():
-    application = Application.builder().token(TOKEN).build()
+# Flask сервер для вебхука
+app = Flask(__name__)
 
+@app.route('/webhook', methods=['POST'])
+async def webhook():
+    json_data = request.get_json()
+    update = Update.de_json(json_data, app)
+    await application.process_update(update)
+    return 'OK', 200
+
+# Основная функция
+if __name__ == "__main__":
+    application = Application.builder().token(TOKEN).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(button_callback))
 
-    await application.initialize()
-    await application.start()
-    await application.updater.start_polling()
-
-    # Держим бота активным
-    while True:
-        await asyncio.sleep(1)
-
-if __name__ == "__main__":
-    asyncio.run(main())
+    # Установка вебхука
+    PORT = int(os.getenv("PORT", 10000))  # Порт из переменной окружения или 10000 по умолчанию
+    HEROKU_URL = os.getenv("RENDER_EXTERNAL_URL", "https://your-render-service.onrender.com")  # URL сервиса
+    application.run_webhook(
+        listen='0.0.0.0',
+        port=PORT,
+        url_path=TOKEN,
+        webhook_url=f"{HEROKU_URL}/{TOKEN}"
+    )
+    app.run(host='0.0.0.0', port=PORT)
